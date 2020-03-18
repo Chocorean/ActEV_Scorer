@@ -30,7 +30,11 @@
 # bundled with the code in compliance with the conditions of those
 # licenses.
 
-from munkres import Munkres, DISALLOWED, make_cost_matrix, UnsolvableMatrix
+from wrapper import get_compute, get_cost_matrix, get_disallowed
+compute = get_compute()
+make_cost_matrix = get_cost_matrix()
+DISALLOWED = get_disallowed()
+
 from operator import and_
 
 from alignment_record import AlignmentRecord
@@ -161,7 +165,7 @@ def perform_alignment(ref_instances, sys_instances, kernel, maximize = True):
     unmapped_sys = set(range(0, len(sys_instances)))
     unmapped_ref = set(range(0, len(ref_instances)))
     if len(matrix) > 0:
-        for s_i, r_i in Munkres().compute(matrix):
+        for s_i, r_i in compute(matrix):
             if disallowed.get((s_i, r_i), False):
                 continue
 

@@ -45,6 +45,15 @@ lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib")
 sys.path.append(lib_path)
 protocols_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib/protocols")
 sys.path.append(protocols_path)
+# Algorithm list
+algo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wrapper")
+algos_list = os.listdir(algo_path)
+algos_list.remove('__init__.py')
+for i in range(len(algos_list)):
+    algos_list[i] = algos_list[i][:-3:]
+algos = ', '.join(algos_list)
+
+from wrapper import update_algorith
 
 from activity_instance import *
 from plot import *
@@ -291,6 +300,9 @@ def score_basic(protocol_class, args):
 
         if args.output_dir is None:
             err_quit("Missing required OUTPUT_DIR argument (-o, --output-dir).  Aborting!")
+    
+    # updating chosen algorithm
+    update_algorith(args.algorithm)
 
     system_output = load_system_output(log, args.system_output_file)
     activity_index = load_activity_index(log, args.activity_index)
@@ -411,6 +423,8 @@ def save_DET(dc, path, file_name, plot_options={}):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Scoring script for the NIST ActEV evaluation")
+
+    parser.add_argument("-A", "--algorithm", type=str, required=False, help="Change the solving algorithm (default 'munkres'): {}".format(algos), default="munkres")
 
     subparsers = parser.add_subparsers(help="Scoring protocols.  Include the '-h' argument after the selected protocol to see it's usage (e.g. ActEV18_AD -h)")
 

@@ -6,7 +6,9 @@ import os
 lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../lib")
 sys.path.append(lib_path)
 
-from munkres import Munkres, DISALLOWED
+#from munkres import DISALLOWED
+from wrapper import get_disallowed
+DISALLOWED = get_disallowed()
 
 import unittest
 from alignment import *
