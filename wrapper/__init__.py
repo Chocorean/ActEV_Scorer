@@ -33,8 +33,9 @@
 import os
 import importlib
 
-ALGORITHM = 'munkres'
-
+#ALGORITHM = 'munkres'
+#ALGORITHM = 'lapjv_lapjv'
+#ALGORITHM = 'lap_lapjv'
 
 class UnknowAlgorithmError(Exception):
     """
@@ -92,29 +93,14 @@ def _get_lib():
             return importlib.import_module(".{}".format(ALGORITHM), package="wrapper")
 
 
-##### Getters #####
-
 def get_compute():
-    global ALGORITHM
+    """
+    Return corresponding compute function.
+    """
     return _get_lib().compute
-
-def get_cost_matrix():
-    global ALGORITHM
-    return _get_lib().cost_matrix
-
-def get_unsolvable_matrix():
-    global ALGORITHM
-    return _get_lib().UnsolvableMatrix
-
-def get_disallowed():
-    global ALGORITHM
-    return _get_lib().DISALLOWED
 
 ##### #####
 
 __all__ = [
-    'get_compute',
-    'get_cost_matrix',
-    'get_unsolvable_matrix',
-    'get_disallowed'
+    'get_compute'
 ]

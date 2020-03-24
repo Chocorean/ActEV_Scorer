@@ -1,4 +1,4 @@
-# ./wrapper/munkres.py
+# ./wrapper/lap_lapjv.py
 # Author(s): Baptiste Chocot
 
 # This software was developed by employees of the National Institute of
@@ -30,7 +30,6 @@
 # bundled with the code in compliance with the conditions of those
 # licenses.
 
-import munkres as m
+import lap
 
-
-compute = (m.Munkres().compute, 'munkres')
+compute = (lap.lapjv, 'lap_lapjv')

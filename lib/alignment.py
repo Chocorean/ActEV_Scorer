@@ -30,17 +30,17 @@
 # bundled with the code in compliance with the conditions of those
 # licenses.
 
-from wrapper import get_compute, get_cost_matrix, get_disallowed
-compute = get_compute()
-make_cost_matrix = get_cost_matrix()
-DISALLOWED = get_disallowed()
+import sys
 
 from operator import and_
+import numpy as np
 
 from alignment_record import AlignmentRecord
 from helpers import *
 from functools import reduce
 
+from wrapper import get_compute
+from munkres import Munkres, make_cost_matrix, DISALLOWED, UnsolvableMatrix
 
 
 def build_actev19_linear_combination_kernel(filters, components, weights, initial_similarity = 1):
@@ -159,13 +159,43 @@ def perform_alignment(ref_instances, sys_instances, kernel, maximize = True):
             return max_sim + 1 if sim == DISALLOWED else sim
 
 
-    matrix = make_cost_matrix(sim_matrix, _mapper)
+    cost_matrix = make_cost_matrix(sim_matrix, _mapper)
 
     correct_detects, false_alarms, missed_detects = [], [], []
     unmapped_sys = set(range(0, len(sys_instances)))
     unmapped_ref = set(range(0, len(ref_instances)))
-    if len(matrix) > 0:
-        for s_i, r_i in compute(matrix):
+
+
+    compute, algo = get_compute()
+    indexes = []
+    if len(cost_matrix) > 0:
+        if algo == 'munkres':
+            indexes = compute(cost_matrix)
+        else:
+            if algo == 'lapjv_lapjv':
+                try:
+                    row_ind, col_ind, _ = compute(np.array(cost_matrix), force_doubles=True)
+                except ValueError:
+                    indexes = Munkres().compute(cost_matrix)
+                else:
+                    for i in range(len(row_ind)):
+                        indexes.append((i, row_ind[i]))
+            elif algo == 'lap_lapjv':
+                try:
+                    c, x, y = compute(np.array(cost_matrix), extend_cost=True)
+                except ValueError:
+                    pass
+                else:
+                    """
+                    we could optimize it but rn its okay
+                    """
+                    if len(x) != len(y):
+                        indexes = Munkres().compute(cost_matrix)
+                    else:
+                        for i in range(len(x)):
+                            indexes.append((i, x[i]))
+
+        for s_i, r_i in indexes:
             if disallowed.get((s_i, r_i), False):
                 continue
 
