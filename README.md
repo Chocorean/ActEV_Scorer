@@ -24,11 +24,19 @@ a system output file adhering to the JSON format defined in the ActEV evaluation
 
 ### Option description
 
-SCORING_PROTOCOL - Positional argument, from a fixed set of values
-(e.g. ActEV18_AD).  This required argument controls what system
-output formats are valid, and what metrics are computed.  A
-description of each supported protocol can be found in the
-[Protocols](#protocols) section of this document
+#### Algorithm
+
+You can choose the algorithm you want to use to solve the LAP. Default choice is `munkres`. Current choices are:
+
+* [`munkres`](https://github.com/bmc/munkres)
+* [`lapjv_lapjv`](https://github.com/src-d/lapjv)
+* [`lap_lapjv`](https://github.com/gatagat/lap)
+
+Syntax example: `python3 ActEV_Scorer.py [-A lap_lapjv] SCORING_PROTOCOL ..`
+
+#### Scoring protocol
+
+Positional argument, from a fixed set of values (e.g. ActEV18_AD). This required argument controls what system output formats are valid, and what metrics are computed. A description of each supported protocol can be found in the [Protocols](#protocols) section of this document
 
 - -s SYSTEM_OUTPUT_FILE - Required; path to the system output JSON file to be scored
 
@@ -52,7 +60,7 @@ description of each supported protocol can be found in the
 
 - -t DET_Point_Resolution - Optional; if enabled, this will change the number of points used for the det curves to be the input integer value rather than the max
 
-#### Protocols
+##### Protocols
 
 ActEV18_AD - Scoring protocol for the ActEV 2018 Activity Detection task, the following measures are computed:
 
@@ -196,7 +204,7 @@ December 16, 2019
 - Added Actev_SDL_V2 protocol
 - Added tests 11-4, 11-5
 
-March 10, 2021 - Version 0.5.0
+March 10, 2020 - Version 0.5.0
 
 - Updated to Python 3.7
 - Updated tests
@@ -204,6 +212,11 @@ March 10, 2021 - Version 0.5.0
   - `diff` is no longer used during tests. A custom one is used due to the difference of floats precision between Python 2 and 3.
 - Updated README and made it more user-friendly, using MarkDown
 - Added `install` recipe for Makefile
+
+March 24, 2020 - Version 0.5.1
+
+- Add wrapper for different LAP solvers
+- Add `lap_lapjv` and `lapjv_lapjv` LAP solvers
 
 ### Contact
 
