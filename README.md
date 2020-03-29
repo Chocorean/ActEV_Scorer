@@ -1,8 +1,8 @@
 # ActEV Scoring Software
 
-## Version: 0.5.0
+## Version: 0.5.1
 
-## Date: March 10, 2020
+## Date: March 24, 2020
 
 ------------------------
 
