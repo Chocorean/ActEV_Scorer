@@ -119,15 +119,15 @@ def boundingbox_merge(my_data, aggre_type):
         for i in range(0, len(my_data['activities'])):
             video_key = list(my_data['activities'][i]['localization'].keys())[0]
             norm_frames = list(my_data['activities'][i]['localization'][video_key])
-            norm_frames.sort()
             norm_frames = [int(i) for i in norm_frames]
+            norm_frames.sort()
             temporal_padding = min(150, max((norm_frames[1]-norm_frames[0]), 60))
             active_frames = dict()
             if norm_frames[0] - temporal_padding < 0:
                 active_frames['0'] = 1
             else:
                 active_frames[str(norm_frames[0]-temporal_padding)] = 1
-            active_frames[str(norm_frames[1]+temporal_padding)] = 0
+            active_frames[str(norm_frames[1] + temporal_padding)] = 0
             active_frames = ss(active_frames)
             activity = my_data['activities'][i]['activity']
             if activity in my_key_dict:
@@ -137,8 +137,8 @@ def boundingbox_merge(my_data, aggre_type):
         for j in range(0, len(my_data['activities'])):
             video_key = list(my_data['activities'][j]['localization'].keys())[0]
             norm_frames = list(my_data['activities'][j]['localization'][video_key])
-            norm_frames.sort()
             norm_frames = [int(i) for i in norm_frames]
+            norm_frames.sort()
             temporal_padding = min(150, max((norm_frames[1] - norm_frames[0]), 60))
             active_frames = dict()
             if norm_frames[0] - temporal_padding < 0:
@@ -148,13 +148,19 @@ def boundingbox_merge(my_data, aggre_type):
             active_frames[str(norm_frames[1] + temporal_padding)] = 0
             active_frames = list(active_frames)
             activity = my_data['activities'][j]['activity']
-            activ_keys = list(my_key_dict[activity].keys())
+            activ_keys = [key for (key,value) in my_key_dict[activity].items() if value > 0]
             activ_keys = [int(i) for i in activ_keys]
             activ_keys.sort()
             activ_bool_list = [int(active_frames[1]) > i > int(active_frames[0]) for i in activ_keys]
+            final_frame_bool = False
+            if active_frames[1] in my_key_dict[activity]:
+                if my_key_dict[activity][active_frames[1]] == 0:
+                    final_frame_bool = True
+            else:
+                final_frame_bool = True
             if all(flg is False for flg in activ_bool_list) and \
                     my_key_dict[activity][active_frames[0]] == 1 and \
-                    my_key_dict[activity][active_frames[1]] == 0:
+                    final_frame_bool is True:
                 act_id = my_data['activities'][j]['activityID']
                 my_df = my_df.append({'activity': activity, 'activityID': act_id, 'clipID': video_key},
                                ignore_index=True)
