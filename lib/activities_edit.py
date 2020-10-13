@@ -3,11 +3,11 @@ import argparse
 import sys
 import os
 import pandas as pd
+import numpy as np
 lib_path = os.path.join(os.path.dirname(
     os.path.abspath(__file__)), "../../lib")
 sys.path.append(lib_path)
 from sparse_signal import SparseSignal as ss
-import metrics
 
 
 def boundingbox_merge(my_data, aggre_type):
@@ -130,15 +130,16 @@ def boundingbox_merge(my_data, aggre_type):
             active_frames[str(norm_frames[1] + temporal_padding)] = 0
             active_frames = ss(active_frames)
             activity = my_data['activities'][i]['activity']
-            if activity in my_key_dict:
-                my_key_dict[activity] = my_key_dict[activity] + active_frames
+            if (activity+'_'+video_key) in my_key_dict:
+                my_key_dict[activity+'_'+video_key] = my_key_dict[activity+'_'+video_key] + active_frames
             else:
-                my_key_dict[activity] = active_frames
+                my_key_dict[activity+'_'+video_key] = active_frames
         for j in range(0, len(my_data['activities'])):
             video_key = list(my_data['activities'][j]['localization'].keys())[0]
             norm_frames = list(my_data['activities'][j]['localization'][video_key])
             norm_frames = [int(i) for i in norm_frames]
             norm_frames.sort()
+            # Temporal padding rules
             temporal_padding = min(150, max((norm_frames[1] - norm_frames[0]), 60))
             active_frames = dict()
             if norm_frames[0] - temporal_padding < 0:
@@ -148,19 +149,24 @@ def boundingbox_merge(my_data, aggre_type):
             active_frames[str(norm_frames[1] + temporal_padding)] = 0
             active_frames = list(active_frames)
             activity = my_data['activities'][j]['activity']
-            activ_keys = [key for (key,value) in my_key_dict[activity].items() if value > 0]
-            activ_keys = [int(i) for i in activ_keys]
-            activ_keys.sort()
-            activ_bool_list = [int(active_frames[1]) > i > int(active_frames[0]) for i in activ_keys]
-            final_frame_bool = False
-            if active_frames[1] in my_key_dict[activity]:
-                if my_key_dict[activity][active_frames[1]] == 0:
-                    final_frame_bool = True
+            rel_frames = np.asarray([int(i) for i in my_key_dict[activity + '_' + video_key].keys()])
+            # Grab closest frames to the start and end points after remporal padding
+            activ_start = int(active_frames[0])
+            activ_end = int(active_frames[1])
+            if int(active_frames[0]) not in rel_frames:
+                start = str(rel_frames[rel_frames < activ_start].max())
             else:
-                final_frame_bool = True
+                start = active_frames[0]
+            if int(active_frames[1]) not in rel_frames:
+                end = str(rel_frames[rel_frames < activ_end].max())
+            else:
+                end = active_frames[1]
+            activ_keys = [int(key) for (key, value) in my_key_dict[activity+'_'+video_key].items() if value > 0]
+            activ_keys.sort()
+            activ_bool_list = [int(end) > i > int(start) for i in activ_keys]
             if all(flg is False for flg in activ_bool_list) and \
-                    my_key_dict[activity][active_frames[0]] == 1 and \
-                    final_frame_bool is True:
+                    my_key_dict[activity+'_'+video_key][start] == 1 and \
+                    my_key_dict[activity+'_'+video_key][end] == 0:
                 act_id = my_data['activities'][j]['activityID']
                 my_df = my_df.append({'activity': activity, 'activityID': act_id, 'clipID': video_key},
                                ignore_index=True)
